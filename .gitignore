@@ -1,2 +1,4 @@
 .vscode
 /Data/img_align_celeba
+/Scripts/wandb
+/Notebooks/wandb
