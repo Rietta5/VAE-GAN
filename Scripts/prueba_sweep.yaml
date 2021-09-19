@@ -1,0 +1,11 @@
+program: Conv_densas_wandb.py
+method: grid
+metric:
+  name: validation_loss
+  goal: minimize
+parameters:
+  LATENT_DIM:
+    values:
+    - 2
+    - 5
+    - 10
