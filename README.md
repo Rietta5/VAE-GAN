@@ -14,7 +14,9 @@ Para una mejor organización del trabajo, he creado varias carpetas para poder d
     - **AutoEncoder_conv_colors:** Generalización de la clase para imágenes en color.
     - **AutoEncoder_var:** Clase definitiva con el AE variacional que utilizaremos para el pre-entrenamiento de la GAN.
 
-- **Images**: Imágenes para ejemplificar todo lo que se explique que irán también en el documento final.
+- **Images:** Imágenes para ejemplificar todo lo que se explique que irán también en el documento final.
+
+- **Scripts:** Estoy usando una herramienta nueva, wandb, para *trackear* experimentos. Para hacerlo más legible, ese seguimiento se hace desde scripts de python después de comprobar en un notebook que la red neuronal funciona correctamente.
 
 - **Papers:** Subiré todos los papers en los que me vaya basando y que posteriormente aparecerán en el apartado *Referencias* del documento final. En la misma carpeta hay otro README donde iré poniendo un pequeño resumen de lo que he entendido y su utilización en el trabajo.
 
