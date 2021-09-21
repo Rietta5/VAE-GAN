@@ -12,7 +12,8 @@ Para una mejor organización del trabajo, he creado varias carpetas para poder d
     - **AutoEncoder_densas:** Primera aproximación a los AE a partir de redes densas para comprender su funcionamiento.
     - **AutoEncoder_conv:** Siguiente aproximación con capas convolucionales.
     - **AutoEncoder_conv_colors:** Generalización de la clase para imágenes en color.
-    - **AutoEncoder_var:** Clase definitiva con el AE variacional que utilizaremos para el pre-entrenamiento de la GAN.
+    - **AutoEncoderVariacional:** Clase definitiva con el AE variacional que utilizaremos para el pre-entrenamiento de la GAN.
+    - **GAN:** Generación de la clase definitva de la GAN con el VAE pre-entrenado.
 
 - **Images:** Imágenes para ejemplificar todo lo que se explique que irán también en el documento final.
 
