@@ -77,7 +77,7 @@ class GAN(tf.keras.Model):
 
         with tf.GradientTape() as tape:
             pred_bien = self.discriminador(X)
-            error_dis_bien = tf.keras.metrics.binary_crossentropy(etiquetas_bien, pred_bien)
+            error_dis_bien = tf.keras.losses.BinaryCrossentropy()(etiquetas_bien, pred_bien)
 
         gradients = tape.gradient(error_dis_bien, self.discriminador.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.discriminador.trainable_variables))
@@ -88,7 +88,7 @@ class GAN(tf.keras.Model):
 
         with tf.GradientTape() as tape:
             pred_mal = self.discriminador(generadas)
-            error_dis_mal = tf.keras.metrics.binary_crossentropy(etiquetas_mal, pred_mal)
+            error_dis_mal = tf.keras.losses.BinaryCrossentropy()(etiquetas_mal, pred_mal)
         
         gradients = tape.gradient(error_dis_mal, self.discriminador.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.discriminador.trainable_variables))
@@ -104,11 +104,10 @@ class GAN(tf.keras.Model):
             generadas = self.generador(ruido)
             # Propagación
             pred_bien = self.discriminador(generadas)
-            error_gen = tf.keras.metrics.binary_crossentropy(etiquetas_bien, pred_bien)
+            error_gen = tf.keras.losses.BinaryCrossentropy()(etiquetas_bien, pred_bien)
 
         gradients = tape.gradient(error_gen, self.generador.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.generador.trainable_variables))
-
         return {"Error Generador":error_gen, "Error Discriminador Verdaderas":error_dis_bien, "Error Discriminador Falsas":error_dis_mal}
 
 
