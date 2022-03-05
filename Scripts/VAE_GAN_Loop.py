@@ -126,7 +126,8 @@ def reconstruccion(model, n, data):
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-      # plt.show()
+        wandb.log({"Reconstruccion": plt})
+        #plt.show()
 
 # Función para representar gráficamente el espacio latente
 
@@ -196,7 +197,7 @@ def plot_history(history):
     plt.plot(history.history["loss"], label="Train")
     plt.plot(history.history["val_loss"], label="Test")
     plt.legend()
-    # plt.show()
+    #plt.show()
 
 def hacedor_n(generador, n):
     """Función de reconstrucción de imágenes DESPUÉS de cada época"""
@@ -214,7 +215,7 @@ def hacedor_n(generador, n):
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-      # plt.show()
+        #plt.show()
     plt.tight_layout()
 
 class CallBackHacedor(tf.keras.callbacks.Callback):
@@ -235,6 +236,7 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         hacedor_n(self.model.generador, self.n)
         plt.suptitle(f"Época {epoch}")
+        wandb.log({"Generador":plt})
         #plt.show()
 
 class GAN(tf.keras.Model):
@@ -309,7 +311,7 @@ if __name__ == "__main__":
         config = dict(
                 LATENT_DIM = 128,
                 EPOCHS_VAE = 20,
-                EPOCHS_GAN = 20,
+                EPOCHS_GAN = 30,
                 BATCH_SIZE = 64,
                 LEARNING_RATE = 0.0001,
                 BETA = 0.000001
