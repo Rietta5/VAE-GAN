@@ -51,7 +51,8 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         hacedor_n(self.model.generador, self.n)
         plt.suptitle(f"Época {epoch}")
-        plt.show()
+        wandb.log({"Generador":plt})
+        #plt.show()
 
 
 class GAN(tf.keras.Model):
