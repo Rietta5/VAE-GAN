@@ -53,6 +53,14 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
         plt.suptitle(f"Época {epoch}")
         wandb.log({"Generador":plt})
         #plt.show()
+    
+    def on_train_end(self, epoch, logs=None):
+        ruido = tf.random.normal((50, 128))
+        img_gen = generador(ruido).numpy()
+        for img in img_gen:
+            plt.figure()
+            plt.imshow(img.numpy().reshape((28,28)))
+            wandb.log({"Muestra_VAEGAN":plt})
 
 
 class GAN(tf.keras.Model):
@@ -129,7 +137,7 @@ if __name__ == "__main__":
         config = dict(
                 LATENT_DIM = 128,
                 EPOCHS = 30,
-                BATCH_SIZE = 64,
+                BATCH_SIZE = 128,
                 LEARNING_RATE = 0.0001
             )
         run = wandb.init(config=config, project="GAN-TEST-LOOP")
@@ -159,7 +167,7 @@ if __name__ == "__main__":
 
         gan = GAN(discriminador=discriminador, generador=generador)
         gan.compile(optimizer=tf.optimizers.Adam(learning_rate=config.LEARNING_RATE))
-        history = gan.fit(Xtrain, epochs=config.EPOCHS,
+        history = gan.fit(Xtrain, batch_size=config.BATCH_SIZE, epochs=config.EPOCHS,
                         callbacks=[CallBackHacedor(n=10),WandbCallback()],
                         verbose = 0)
         wandb.finish()

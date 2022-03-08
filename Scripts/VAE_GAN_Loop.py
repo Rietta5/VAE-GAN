@@ -239,6 +239,14 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
         wandb.log({"Generador":plt})
         #plt.show()
 
+    def on_train_end(self, epoch, logs=None):
+        ruido = tf.random.normal((50, 128))
+        img_gen = generador(ruido).numpy()
+        for img in img_gen:
+            plt.figure()
+            plt.imshow(img.numpy().reshape((28,28)))
+            wandb.log({"Muestra_VAEGAN":plt})
+
 class GAN(tf.keras.Model):
     def __init__(self, discriminador, generador):
         super(GAN, self).__init__()
@@ -310,9 +318,9 @@ if __name__ == "__main__":
     for i in range(20):
         config = dict(
                 LATENT_DIM = 128,
-                EPOCHS_VAE = 20,
+                EPOCHS_VAE = 10,
                 EPOCHS_GAN = 30,
-                BATCH_SIZE = 64,
+                BATCH_SIZE = 128,
                 LEARNING_RATE = 0.0001,
                 BETA = 0.000001
             )
@@ -324,7 +332,7 @@ if __name__ == "__main__":
 
         vae.compile(optimizer="adam")
 
-        history = vae.fit(Xtrain, batch_size=64, epochs=config.EPOCHS_VAE, verbose=0,
+        history = vae.fit(Xtrain, batch_size=config.BATCH_SIZE, epochs=config.EPOCHS_VAE, verbose=0,
                     callbacks=[CallBackReconstruccion(n=10, latent_dim=128, data=Xtrain), WandbCallback()])
 
         discriminador = tf.keras.models.Sequential([
@@ -350,9 +358,10 @@ if __name__ == "__main__":
         # Cargando los pesos preentrenados
         generador.set_weights = vae.decoder.weights.copy
 
+        # Entrenamos la GAN
         gan = GAN(discriminador=discriminador, generador=generador)
         gan.compile(optimizer=tf.optimizers.Adam(learning_rate=config.LEARNING_RATE))
-        history = gan.fit(Xtrain, epochs=config.EPOCHS_GAN, verbose=0,
+        history = gan.fit(Xtrain, batch_size=config.BATCH_SIZE, epochs=config.EPOCHS_GAN, verbose=0,
                     callbacks=[CallBackHacedor(n=10), WandbCallback()])
 
         wandb.finish()
