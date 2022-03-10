@@ -59,8 +59,10 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
         img_gen = generador(ruido).numpy()
         for img in img_gen:
             plt.figure()
-            plt.imshow(img.numpy().reshape((28,28)))
-            wandb.log({"Muestra_VAEGAN":plt})
+            plt.imshow(img.reshape((28,28)))
+            plt.gray()
+            wandb.log({"Muestra_GAN":plt})
+            
 
 
 class GAN(tf.keras.Model):
@@ -73,7 +75,7 @@ class GAN(tf.keras.Model):
 
         ## Generar valores aleatorios
 
-        ruido = tf.random.normal((X.shape[0], 128))
+        ruido = tf.random.normal((tf.shape(X)[0], 128))
 
         ## Generar imágen sintética
 
@@ -81,7 +83,7 @@ class GAN(tf.keras.Model):
 
         ## Pasar las imágenes y entrenar el discriminador
         # Pasar las imágenes reales
-        etiquetas_bien = tf.random.normal((X.shape[0],1), mean=1.0, stddev=0.05)
+        etiquetas_bien = tf.random.normal((tf.shape(X)[0],1), mean=1.0, stddev=0.05)
 
         with tf.GradientTape() as tape:
             pred_bien = self.discriminador(X)
@@ -92,7 +94,7 @@ class GAN(tf.keras.Model):
 
 
         # Pasar las imágenes reales
-        etiquetas_mal = tf.random.normal((X.shape[0],1), mean=0.0, stddev=0.05)
+        etiquetas_mal = tf.random.normal((tf.shape(X)[0],1), mean=0.0, stddev=0.05)
 
         with tf.GradientTape() as tape:
             pred_mal = self.discriminador(generadas)
@@ -103,10 +105,10 @@ class GAN(tf.keras.Model):
 
         ## Entrenar el generador
         # Generar valores aleatorios
-        ruido = tf.random.normal((X.shape[0], 128))
+        ruido = tf.random.normal((tf.shape(X)[0], 128))
 
         # Entrenamiento
-        etiquetas_bien = tf.ones((X.shape[0],1)) 
+        etiquetas_bien = tf.ones((tf.shape(X)[0],1)) 
         with tf.GradientTape() as tape:
             # Generar imágen sintética
             generadas = self.generador(ruido)
@@ -133,10 +135,10 @@ if __name__ == "__main__":
 
     Xtrain.shape, Xtest.shape
 
-    for i in range(20):
+    for i in range(2):
         config = dict(
                 LATENT_DIM = 128,
-                EPOCHS = 30,
+                EPOCHS = 2,
                 BATCH_SIZE = 128,
                 LEARNING_RATE = 0.0001
             )
@@ -144,9 +146,9 @@ if __name__ == "__main__":
         config = wandb.config
 
         discriminador = tf.keras.models.Sequential([
-            layers.Conv2D(64, (4,4), strides = 2, padding = "same" ,input_shape = Xtrain[0].shape),
+            layers.Conv2D(64, (3,3), strides = 2, padding = "same" ,input_shape = Xtrain[0].shape),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2D(128, (4,4), strides = 2, padding = "same"),
+            layers.Conv2D(128, (3,3), strides = 2, padding = "same"),
             layers.LeakyReLU(alpha = 0.2),
             layers.Flatten(),
             layers.Dropout(0.2),
@@ -156,9 +158,9 @@ if __name__ == "__main__":
         generador = tf.keras.models.Sequential([
             layers.Dense(7*7*128, input_shape = (128,)),
             layers.Reshape((7,7,128)),
-            layers.Conv2DTranspose(128, (4,4), strides = 2, padding = "same"),
+            layers.Conv2DTranspose(128, (3,3), strides = 2, padding = "same"),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2DTranspose(256, (4,4), strides = 2, padding = "same"),
+            layers.Conv2DTranspose(256, (3,3), strides = 2, padding = "same"),
             layers.LeakyReLU(alpha = 0.2),
             layers.Conv2D(1, (3,3), strides = 1, padding = "same", activation = "tanh")
         ])

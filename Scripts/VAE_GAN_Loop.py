@@ -38,10 +38,12 @@ class VAE(tf.keras.Model):
         self.beta = beta
 
         self.encoder = tf.keras.models.Sequential([
-            layers.Conv2D(32, (3,3), input_shape=(input_dim,input_dim,1), padding='same', strides = 2, activation = "relu"),
-            layers.Conv2D(64, (3,3), padding='same', strides = 2, activation = "relu"),
+            layers.Conv2D(256, (3,3), input_shape=(input_dim,input_dim,1), padding="same", strides = 2),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(128, (3,3), padding="same", strides = 2),
+            layers.LeakyReLU(alpha = 0.2),
             layers.Flatten(),
-            layers.Dense(16, activation = "relu")
+            layers.Dense(128, activation = "relu")
         ])
 
         self.mu = layers.Dense(self.latent_dim, name="mu")
@@ -49,12 +51,13 @@ class VAE(tf.keras.Model):
         self.resampling = Resampling()
 
         self.decoder = tf.keras.models.Sequential([
-            layers.Dense(16, input_shape=(latent_dim,), activation = "relu"),
-            layers.Dense(7*7*64, activation = "relu"),
-            layers.Reshape((7,7,64)),
-            layers.Conv2DTranspose(64,(3,3), padding='same', strides = (2,2), activation = "relu"),
-            layers.Conv2DTranspose(32,(3,3), padding='same', strides = (2,2), activation = "relu"),
-            layers.Conv2DTranspose(1,(3,3), padding='same', strides = (1,1), activation = "sigmoid")
+            layers.Dense(7*7*128, input_shape=(latent_dim,)),
+            layers.Reshape((7,7,128)),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(1,(3,3), strides = 1, padding="same", activation = "tanh")
         ])
 
     def encode(self, data):
@@ -244,7 +247,8 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
         img_gen = generador(ruido).numpy()
         for img in img_gen:
             plt.figure()
-            plt.imshow(img.numpy().reshape((28,28)))
+            plt.imshow(img.reshape((28,28)))
+            plt.gray()
             wandb.log({"Muestra_VAEGAN":plt})
 
 class GAN(tf.keras.Model):
@@ -257,7 +261,7 @@ class GAN(tf.keras.Model):
 
         ## Generar valores aleatorios
 
-        ruido = tf.random.normal((X.shape[0], 128))
+        ruido = tf.random.normal((tf.shape(X)[0], 128))
 
         ## Generar imágen sintética
 
@@ -265,7 +269,7 @@ class GAN(tf.keras.Model):
 
         ## Pasar las imágenes y entrenar el discriminador
         # Pasar las imágenes reales
-        etiquetas_bien = tf.random.normal((X.shape[0],1), mean=1.0, stddev=0.05)
+        etiquetas_bien = tf.random.normal((tf.shape(X)[0],1), mean=1.0, stddev=0.05)
 
         with tf.GradientTape() as tape:
             pred_bien = self.discriminador(X)
@@ -276,7 +280,7 @@ class GAN(tf.keras.Model):
 
 
         # Pasar las imágenes reales
-        etiquetas_mal = tf.random.normal((X.shape[0],1), mean=0.0, stddev=0.05)
+        etiquetas_mal = tf.random.normal((tf.shape(X)[0],1), mean=0.0, stddev=0.05)
 
         with tf.GradientTape() as tape:
             pred_mal = self.discriminador(generadas)
@@ -287,10 +291,10 @@ class GAN(tf.keras.Model):
 
         ## Entrenar el generador
         # Generar valores aleatorios
-        ruido = tf.random.normal((X.shape[0], 128))
+        ruido = tf.random.normal((tf.shape(X)[0], 128))
 
         # Entrenamiento
-        etiquetas_bien = tf.ones((X.shape[0],1)) 
+        etiquetas_bien = tf.ones((tf.shape(X)[0],1)) 
         with tf.GradientTape() as tape:
             # Generar imágen sintética
             generadas = self.generador(ruido)
@@ -336,9 +340,9 @@ if __name__ == "__main__":
                     callbacks=[CallBackReconstruccion(n=10, latent_dim=128, data=Xtrain), WandbCallback()])
 
         discriminador = tf.keras.models.Sequential([
-            layers.Conv2D(64, (4,4), strides = 2, padding = "same" ,input_shape = Xtrain[0].shape),
+            layers.Conv2D(64, (3,3), strides = 2, padding = "same" ,input_shape = Xtrain[0].shape),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2D(128, (4,4), strides = 2, padding = "same"),
+            layers.Conv2D(128, (3,3), strides = 2, padding = "same"),
             layers.LeakyReLU(alpha = 0.2),
             layers.Flatten(),
             layers.Dropout(0.2),
@@ -348,15 +352,16 @@ if __name__ == "__main__":
         generador = tf.keras.models.Sequential([
             layers.Dense(7*7*128, input_shape = (128,)),
             layers.Reshape((7,7,128)),
-            layers.Conv2DTranspose(128, (4,4), strides = 2, padding = "same"),
+            layers.Conv2DTranspose(128, (3,3), strides = 2, padding = "same"),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2DTranspose(256, (4,4), strides = 2, padding = "same"),
+            layers.Conv2DTranspose(256, (3,3), strides = 2, padding = "same"),
             layers.LeakyReLU(alpha = 0.2),
             layers.Conv2D(1, (3,3), strides = 1, padding = "same", activation = "tanh")
         ])
 
         # Cargando los pesos preentrenados
-        generador.set_weights = vae.decoder.weights.copy
+        for layer_generador, layer_vae in zip(generador.layers, vae.decoder.layers):
+            layer_generador.set_weights(layer_vae.get_weights())
 
         # Entrenamos la GAN
         gan = GAN(discriminador=discriminador, generador=generador)
