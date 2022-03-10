@@ -135,10 +135,10 @@ if __name__ == "__main__":
 
     Xtrain.shape, Xtest.shape
 
-    for i in range(2):
+    for i in range(20):
         config = dict(
                 LATENT_DIM = 128,
-                EPOCHS = 2,
+                EPOCHS = 30,
                 BATCH_SIZE = 128,
                 LEARNING_RATE = 0.0001
             )
