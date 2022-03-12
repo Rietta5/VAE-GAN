@@ -1,0 +1,18 @@
+program: VAE_Sweep_Beta_LR.py
+method: grid
+metric:
+  name: validation_loss
+  goal: minimize
+parameters:
+  BETA:
+    values:
+    - 0.002
+    - 0.0012
+    - 0.0001
+    - 0.00001
+    - 0.000001
+  LEARNING_RATE:
+    values:
+    - 0.00005
+    - 0.0001
+    - 0.001

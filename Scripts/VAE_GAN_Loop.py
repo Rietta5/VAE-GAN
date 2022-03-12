@@ -325,7 +325,7 @@ if __name__ == "__main__":
                 EPOCHS_VAE = 10,
                 EPOCHS_GAN = 30,
                 BATCH_SIZE = 128,
-                LEARNING_RATE = 0.0001,
+                LEARNING_RATE = 0.00005,
                 BETA = 0.000001
             )
         
