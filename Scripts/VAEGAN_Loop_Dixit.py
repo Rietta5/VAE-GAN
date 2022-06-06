@@ -43,12 +43,19 @@ class VAE(tf.keras.Model):
         self.beta = beta
 
         self.encoder = tf.keras.models.Sequential([
-            layers.Conv2D(256, (3,3), input_shape=(input_dim,input_dim,1), padding="same", strides = 2),
+            layers.Conv2D(256, (3,3), input_shape=(input_dim[1],input_dim[2],1), #256x128
+            padding="same", strides = 2), #128 * 64
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2D(128, (3,3), padding="same", strides = 2),
+            layers.Conv2D(256, (3,3), padding="same", strides = 2),  #64 * 32
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(128, (3,3), padding="same", strides = 2), #32 * 16
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(128, (3,3), padding="same", strides = 2), #16 * 8
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(128, (3,3), padding="same", strides = 2), #8 * 4
             layers.LeakyReLU(alpha = 0.2),
             layers.Flatten(),
-            layers.Dense(128, activation = "relu")
+            layers.Dense(500, activation = "relu")
         ])
 
         self.mu = layers.Dense(self.latent_dim, name="mu")
@@ -56,14 +63,21 @@ class VAE(tf.keras.Model):
         self.resampling = Resampling()
 
         self.decoder = tf.keras.models.Sequential([
-            layers.Dense(7*7*128, input_shape=(latent_dim,)),
-            layers.Reshape((7,7,128)),
+            layers.Dense(8*4*128, input_shape=(latent_dim,)),
+            layers.Reshape((8,4,128)),
             layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
             layers.LeakyReLU(alpha = 0.2),
             layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
             layers.LeakyReLU(alpha = 0.2),
             layers.Conv2D(1,(3,3), strides = 1, padding="same", activation = "tanh")
         ])
+
 
     def encode(self, data):
         data = self.encoder(data)
@@ -161,7 +175,7 @@ class CallBackReconstruccion(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         reconstruccion(self.model, self.n, self.data)
         plt.suptitle(f"Época {epoch}")
-        
+
 # La función que representará la evolucion de la función de coste en train y test
 
 def plot_history(history):
@@ -313,7 +327,7 @@ if __name__ == "__main__":
     # Conjunto final
     Xtrain = np.concatenate([Xtrain_gray,Xtrain_gray_spec1,Xtrain_gray_spec2,Xtrain_gray_spec3], axis = 0)
 
-    for i in range(20):
+    for i in range(10):
         config = dict(
                 LATENT_DIM = 128,
                 EPOCHS_VAE = 10,
@@ -323,7 +337,7 @@ if __name__ == "__main__":
                 BETA = 0.000001
             )
         
-        run = wandb.init(config=config, project="VAE-GAN-TEST-LOOP")
+        run = wandb.init(config=config, project="VAEGAN-TEST-LOOP-NORM-DIXIT")
         config = wandb.config
        
         vae = VAE(latent_dim=config.LATENT_DIM, input_dim=Xtrain.shape[1], beta=config.BETA)
@@ -344,13 +358,19 @@ if __name__ == "__main__":
         ])
 
         generador = tf.keras.models.Sequential([
-            layers.Dense(7*7*128, input_shape = (128,)),
-            layers.Reshape((7,7,128)),
-            layers.Conv2DTranspose(128, (3,3), strides = 2, padding = "same"),
+            layers.Dense(8*4*128, input_shape=(128,)),
+            layers.Reshape((8,4,128)),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2DTranspose(256, (3,3), strides = 2, padding = "same"),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2D(1, (3,3), strides = 1, padding = "same", activation = "tanh")
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(1,(3,3), strides = 1, padding="same", activation = "tanh")
         ])
 
         # Cargando los pesos preentrenados
