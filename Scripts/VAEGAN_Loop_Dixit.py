@@ -120,7 +120,7 @@ class VAE(tf.keras.Model):
 
 def plot_image(image):    
     plt.figure()
-    plt.imshow(image.numpy().reshape((28,28)))
+    plt.imshow(image.numpy().reshape((256,128)))
     #plt.show()
 
 # La función reconstrucción que se usará en el callback
@@ -135,7 +135,7 @@ def reconstruccion(model, n, data):
     for i in range(n):
         # display original
         ax = plt.subplot(2, n, i + 1)
-        plt.imshow(data[i].reshape(28,28))
+        plt.imshow(data[i].reshape(256,128))
         plt.title("Original")
         plt.gray()
         ax.get_xaxis().set_visible(False)
@@ -143,7 +143,7 @@ def reconstruccion(model, n, data):
 
         # display reconstruction
         ax = plt.subplot(2, n, i + 1 + n)
-        plt.imshow(decoded_imgs[i].reshape(28,28))
+        plt.imshow(decoded_imgs[i].reshape(256,128))
         plt.title("Reconstruida")
         plt.gray()
         ax.get_xaxis().set_visible(False)
@@ -199,7 +199,7 @@ def hacedor_n(generador, n):
 
         # display reconstruction
         ax = plt.subplot(2, n, i + 1 + n)
-        plt.imshow(img_gen[i].reshape(28,28))
+        plt.imshow(img_gen[i].reshape(256,128))
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
@@ -232,7 +232,7 @@ class CallBackHacedor(tf.keras.callbacks.Callback):
         img_gen = generador(ruido).numpy()
         for img in img_gen:
             plt.figure()
-            plt.imshow(img.reshape((28,28)))
+            plt.imshow(img.reshape((256,128)))
             plt.gray()
             wandb.log({"Muestra_VAEGAN":plt})
 
@@ -332,7 +332,7 @@ if __name__ == "__main__":
                 LATENT_DIM = 128,
                 EPOCHS_VAE = 10,
                 EPOCHS_GAN = 30,
-                BATCH_SIZE = 128,
+                BATCH_SIZE = 32,
                 LEARNING_RATE = 0.00005,
                 BETA = 0.000001
             )
