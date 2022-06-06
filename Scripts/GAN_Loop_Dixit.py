@@ -164,7 +164,7 @@ if __name__ == "__main__":
     Xtrain = np.concatenate([Xtrain_gray,Xtrain_gray_spec1,Xtrain_gray_spec2,Xtrain_gray_spec3], axis = 0)
 
 
-    for i in range(20):
+    for i in range(10):
         config = dict(
                 LATENT_DIM = 128,
                 EPOCHS = 30,
