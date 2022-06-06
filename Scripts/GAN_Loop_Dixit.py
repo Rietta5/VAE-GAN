@@ -185,13 +185,19 @@ if __name__ == "__main__":
         ])
 
         generador = tf.keras.models.Sequential([
-            layers.Dense(7*7*128, input_shape = (128,)),
-            layers.Reshape((7,7,128)),
-            layers.Conv2DTranspose(128, (3,3), strides = 2, padding = "same"),
+            layers.Dense(8*4*128, input_shape=(128,)),
+            layers.Reshape((8,4,128)),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2DTranspose(256, (3,3), strides = 2, padding = "same"),
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
             layers.LeakyReLU(alpha = 0.2),
-            layers.Conv2D(1, (3,3), strides = 1, padding = "same", activation = "tanh")
+            layers.Conv2DTranspose(128,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2DTranspose(256,(3,3), strides = 2, padding="same"),
+            layers.LeakyReLU(alpha = 0.2),
+            layers.Conv2D(1,(3,3), strides = 1, padding="same", activation = "tanh")
         ])
 
         
